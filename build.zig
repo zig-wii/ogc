@@ -24,7 +24,7 @@ pub fn target_wii(builder: *std.build.Builder, comptime options: Options) !*std.
             .macos => "https://github.com/knarkzel/devkitpro-mac",
             else => "https://github.com/knarkzel/devkitpro-linux",
         };
-        try command(builder.allocator, &.{ "git", "clone", repository, devkitpro });
+        try command(builder.allocator, builder.build_root, &.{ "git", "clone", repository, devkitpro });
     };
 
     // set build options
@@ -49,15 +49,9 @@ pub fn target_wii(builder: *std.build.Builder, comptime options: Options) !*std.
         var iter = dir.iterate();
         while (try iter.next()) |entry| {
             if (std.mem.endsWith(u8, entry.name, ".png")) {
-                const base = entry.name[0 .. entry.name.len - 4];
                 const input = try print(builder.allocator, "{s}/{s}", .{ textures, entry.name });
-                const output = try print(builder.allocator, "{s}/{s}.tpl", .{ textures, base });
                 const conv = try print(builder.allocator, "{s}/tools/bin/gxtexconv", .{devkitpro});
-                try command(builder.allocator, &.{ conv, "-i", input, "-o", output });
-
-                // Delete useless extra header file
-                const header = try print(builder.allocator, "{s}/{s}.h", .{ textures, base });
-                try base_folder.deleteFile(header);
+                try command(builder.allocator, builder.build_root, &.{ conv, "-i", input });
             }
         }
     }
@@ -104,18 +98,14 @@ pub fn target_wii(builder: *std.build.Builder, comptime options: Options) !*std.
     return obj;
 }
 
-fn root() std.fs.Dir {
-    return std.fs.openDirAbsolute(cwd(), .{}) catch unreachable;
-}
-
 fn cwd() []const u8 {
     return std.fs.path.dirname(@src().file) orelse unreachable;
 }
 
 // Runs shell command
-fn command(allocator: std.mem.Allocator, argv: []const []const u8) !void {
+fn command(allocator: std.mem.Allocator, dir: []const u8, argv: []const []const u8) !void {
     var child = std.ChildProcess.init(argv, allocator);
-    child.cwd = cwd();
+    child.cwd = dir;
     child.stderr = std.io.getStdErr();
     child.stdout = std.io.getStdOut();
     _ = try child.spawnAndWait();

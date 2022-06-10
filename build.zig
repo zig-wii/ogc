@@ -45,7 +45,7 @@ pub fn target_wii(builder: *std.build.Builder, comptime options: Options) !*std.
 
     // ensure images in textures are converted to tpl
     if (options.textures) |textures| {
-        const dir = try root().openDir(textures, .{ .iterate = true });
+        const dir = try base_folder.openDir(textures, .{ .iterate = true });
         var iter = dir.iterate();
         while (try iter.next()) |entry| {
             if (std.mem.endsWith(u8, entry.name, ".png")) {

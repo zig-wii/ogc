@@ -51,6 +51,26 @@ pub fn init() Video {
     c.GX_CopyDisp(fbs[fbi], c.GX_TRUE);
     c.GX_SetDispCopyGamma(c.GX_GM_1_0);
 
+    c.GX_InvVtxCache();
+    c.GX_ClearVtxDesc();
+    c.GX_SetVtxDesc(c.GX_VA_POS, c.GX_DIRECT);
+    c.GX_SetVtxDesc(c.GX_VA_CLR0, c.GX_DIRECT);
+    c.GX_SetVtxDesc(c.GX_VA_TEX0, c.GX_DIRECT);
+
+    c.GX_SetVtxAttrFmt(c.GX_VTXFMT0, c.GX_VA_POS, c.GX_POS_XY, c.GX_F32, 0);
+    c.GX_SetVtxAttrFmt(c.GX_VTXFMT0, c.GX_VA_CLR0, c.GX_CLR_RGBA, c.GX_RGBA8, 0);
+    c.GX_SetVtxAttrFmt(c.GX_VTXFMT0, c.GX_VA_TEX0, c.GX_TEX_ST, c.GX_F32, 0);
+
+    c.GX_SetNumChans(1);
+    c.GX_SetChanCtrl(c.GX_COLOR0A0, c.GX_DISABLE, c.GX_SRC_REG, c.GX_SRC_VTX, c.GX_LIGHTNULL, c.GX_DF_NONE, c.GX_AF_NONE);
+    c.GX_SetNumTexGens(1);
+
+    c.GX_SetTevOp(c.GX_TEVSTAGE0, c.GX_PASSCLR);
+    c.GX_SetTevOrder(c.GX_TEVSTAGE0, c.GX_TEXCOORD0, c.GX_TEXMAP0, c.GX_COLOR0A0);
+    c.GX_SetTexCoordGen(c.GX_TEXCOORD0, c.GX_TG_MTX2x4, c.GX_TG_TEX0, c.GX_IDENTITY);
+
+    c.GX_InvalidateTexAll();
+
     // Set perspective matrix
     var perspective: c.Mtx44 = undefined;
     c.guOrtho(&perspective, -37, 510, 0, 639, 0, 300);

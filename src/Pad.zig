@@ -1,6 +1,5 @@
 const std = @import("std");
 const c = @import("c.zig");
-const shl = std.math.shl;
 
 pub fn init() void {
     _ = c.PAD_Init();
@@ -11,7 +10,7 @@ pub fn update() [4]bool {
     const connected = c.PAD_ScanPads();
     var controllers = [4]bool{ false, false, false, false };
     for (controllers) |*controller, i| {
-        if (connected & shl(u32, 1, i) != 0) {
+        if (connected & std.math.shl(u32, 1, i) != 0) {
             controller.* = true;
         }
     }

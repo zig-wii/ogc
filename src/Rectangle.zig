@@ -3,6 +3,7 @@ const c = @import("c.zig");
 
 pub const Rectangle = @This();
 area: [4][2]f32,
+color: u32 = 0xFFFFFFFF,
 
 pub fn init(x: f32, y: f32, w: f32, h: f32) Rectangle {
     return .{ .area = .{ .{ x, y }, .{ x + w, y }, .{ x + w, y + h }, .{ x, y + h } } };

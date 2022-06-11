@@ -75,9 +75,8 @@ pub fn camera(self: *Video, x: f32, y: f32) void {
     c.GX_LoadProjectionMtx(&self.perspective, c.GX_ORTHOGRAPHIC);
 }
 
-/// Loads TPL from path.
+/// Loads TPL from path
 pub fn load_tpl(comptime path: []const u8) void {
-    // Data lives on forever, same as object
     const data = &struct {
         var bytes = @embedFile(path).*;
     }.bytes;
@@ -85,20 +84,22 @@ pub fn load_tpl(comptime path: []const u8) void {
     var texture: c.GXTexObj = undefined;
     _ = c.TPL_OpenTPLFromMemory(&sprite, data, data.len);
     _ = c.TPL_GetTexture(&sprite, 0, &texture);
-
     c.GX_LoadTexObj(&texture, 0);
+
+    c.GX_InvVtxCache();
     c.GX_ClearVtxDesc();
     c.GX_SetVtxDesc(c.GX_VA_POS, c.GX_DIRECT);
+    c.GX_SetVtxDesc(c.GX_VA_CLR0, c.GX_DIRECT);
     c.GX_SetVtxDesc(c.GX_VA_TEX0, c.GX_DIRECT);
 
     c.GX_SetVtxAttrFmt(c.GX_VTXFMT0, c.GX_VA_POS, c.GX_POS_XY, c.GX_F32, 0);
+    c.GX_SetVtxAttrFmt(c.GX_VTXFMT0, c.GX_VA_CLR0, c.GX_CLR_RGBA, c.GX_RGBA8, 0);
     c.GX_SetVtxAttrFmt(c.GX_VTXFMT0, c.GX_VA_TEX0, c.GX_TEX_ST, c.GX_F32, 0);
 
     c.GX_SetNumChans(1);
-    c.GX_SetChanCtrl(c.GX_COLOR0A0, c.GX_DISABLE, c.GX_SRC_REG, c.GX_SRC_VTX, c.GX_LIGHTNULL, c.GX_DF_NONE, c.GX_AF_NONE);
-
     c.GX_SetNumTexGens(1);
-    c.GX_SetTevOp(c.GX_TEVSTAGE0, c.GX_MODULATE);
+
+    c.GX_SetTevOp(c.GX_TEVSTAGE0, c.GX_PASSCLR);
     c.GX_SetTevOrder(c.GX_TEVSTAGE0, c.GX_TEXCOORD0, c.GX_TEXMAP0, c.GX_COLOR0A0);
     c.GX_SetTexCoordGen(c.GX_TEXCOORD0, c.GX_TG_MTX2x4, c.GX_TG_TEX0, c.GX_IDENTITY);
 

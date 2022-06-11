@@ -1,7 +1,8 @@
 # ogc
 
 Zig game engine and bindings for the Wii in Zig with zero-fuss installation.
-To see how this library is used, see [zrogue](https://github.com/zig-wii/rogue).
+To see how this library is used, see [example](https://github.com/zig-wii/example)
+and [rogue](https://github.com/zig-wii/rogue).
 
 ## Commands
 

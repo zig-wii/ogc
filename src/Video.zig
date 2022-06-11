@@ -50,10 +50,12 @@ pub fn init() Video {
     return Video{ .index = fbi, .mode = mode, .framebuffers = fbs, .perspective = perspective };
 }
 
+/// Initialize drawing to screen
 pub fn start(self: *Video) void {
     c.GX_SetViewport(0, 0, @intToFloat(f32, self.mode.fbWidth), @intToFloat(f32, self.mode.efbHeight), 0, 1);
 }
 
+/// Finish drawing to screen
 pub fn finish(self: *Video) void {
     self.index ^= 1;
     c.GX_SetZMode(c.GX_TRUE, c.GX_LEQUAL, c.GX_TRUE);

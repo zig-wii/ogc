@@ -17,7 +17,7 @@ pub fn rectangle(box: Rectangle, color: [3]f32) void {
     c.GX_End();
 }
 
-/// Draw sprite with settings: [x, y, width, height] and size: [tpl_width, tpl_height]
+/// Draw sprite with coords: [x, y, width, height] and size: [tpl_width, tpl_height]
 pub fn sprite(box: Rectangle, coords: [4]f32, size: [2]f32) void {
     const settings = Rectangle.init(coords[0] / size[0], coords[1] / size[1], coords[2] / size[0], coords[3] / size[1]);
     c.GX_Begin(c.GX_QUADS, c.GX_VTXFMT0, 4);

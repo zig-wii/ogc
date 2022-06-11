@@ -6,7 +6,7 @@ pub const Options = struct {
     name: []const u8,
     root_src: []const u8 = "src/main.zig",
     dir: []const u8 = "build",
-    wii_ip: ?[]const u8 = null,
+    wii_ip: ?[]const u8 = "192.168.11.171",
     textures: ?[]const u8 = null,
     dolphin: []const u8 = switch (builtin.target.os.tag) {
         .macos => "Dolphin",

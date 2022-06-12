@@ -104,7 +104,7 @@ fn cwd() []const u8 {
 
 // Runs shell command
 fn command(allocator: std.mem.Allocator, dir: []const u8, argv: []const []const u8) !void {
-    var child = std.ChildProcess.init(argv, allocator);
+    var child = try std.ChildProcess.init(argv, allocator);
     child.cwd = dir;
     child.stderr = std.io.getStdErr();
     child.stdout = std.io.getStdOut();

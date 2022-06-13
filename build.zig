@@ -5,8 +5,7 @@ const print = std.fmt.allocPrint;
 pub const Options = struct {
     name: []const u8,
     root_src: []const u8 = "src/main.zig",
-    dir: []const u8 = "build",
-    wii_ip: ?[]const u8 = "192.168.11.171",
+    wii_ip: ?[]const u8 = null,
     textures: ?[]const u8 = null,
     dolphin: []const u8 = switch (builtin.target.os.tag) {
         .macos => "Dolphin",
@@ -30,7 +29,7 @@ pub fn target_wii(builder: *std.build.Builder, comptime options: Options) !*std.
     // set build options
     const mode = builder.standardReleaseOptions();
     const obj = builder.addObject(options.name, options.root_src);
-    obj.setOutputDir(options.dir);
+    obj.setOutputDir("zig-out");
     obj.linkLibC();
     obj.setLibCFile(std.build.FileSource{ .path = cwd() ++ "/libc.txt" });
     obj.addIncludeDir(try print(builder.allocator, "{s}/libogc/include", .{devkitpro}));
@@ -61,15 +60,15 @@ pub fn target_wii(builder: *std.build.Builder, comptime options: Options) !*std.
     const gcc = try print(builder.allocator, "{s}/devkitPPC/bin/powerpc-eabi-gcc", .{devkitpro});
     const libogc = try print(builder.allocator, "-L{s}/libogc/lib/wii", .{devkitpro});
     const elf2dol = try print(builder.allocator, "{s}/tools/bin/elf2dol", .{devkitpro});
-    const elf = builder.addSystemCommand(&(.{ gcc, "build/" ++ options.name ++ ".o", "-g", "-DGEKKO", "-mrvl", "-mcpu=750", "-meabi", "-mhard-float", "-Wl,-Map,build/.map", libogc } ++ flags ++ .{ "-o", "build/" ++ options.name ++ ".elf" }));
-    const dol = builder.addSystemCommand(&.{ elf2dol, "build/" ++ options.name ++ ".elf", "build/" ++ options.name ++ ".dol" });
+    const elf = builder.addSystemCommand(&(.{ gcc, "zig-out/" ++ options.name ++ ".o", "-g", "-DGEKKO", "-mrvl", "-mcpu=750", "-meabi", "-mhard-float", "-Wl,-Map,zig-out/.map", libogc } ++ flags ++ .{ "-o", "zig-out/" ++ options.name ++ ".elf" }));
+    const dol = builder.addSystemCommand(&.{ elf2dol, "zig-out/" ++ options.name ++ ".elf", "zig-out/" ++ options.name ++ ".dol" });
     builder.default_step.dependOn(&dol.step);
     dol.step.dependOn(&elf.step);
     elf.step.dependOn(&obj.step);
 
     // run dol in dolphin
     const run_step = builder.step("run", "Run in Dolphin");
-    const emulator = builder.addSystemCommand(&.{ options.dolphin, "-a", "LLE", "-e", "build/" ++ options.name ++ ".dol" });
+    const emulator = builder.addSystemCommand(&.{ options.dolphin, "-a", "LLE", "-e", "zig-out/" ++ options.name ++ ".dol" });
     run_step.dependOn(&dol.step);
     run_step.dependOn(&emulator.step);
 
@@ -77,7 +76,7 @@ pub fn target_wii(builder: *std.build.Builder, comptime options: Options) !*std.
     if (options.wii_ip) |wii_ip| {
         const deploy_step = builder.step("deploy", "Deploy to Wii");
         const program = try print(builder.allocator, "{s}/tools/bin/wiiload", .{devkitpro});
-        const wiiload = builder.addSystemCommand(&.{ program, "build/" ++ options.name ++ ".dol" });
+        const wiiload = builder.addSystemCommand(&.{ program, "zig-out/" ++ options.name ++ ".dol" });
         wiiload.setEnvironmentVariable("WIILOAD", "tcp:" ++ wii_ip);
         deploy_step.dependOn(&dol.step);
         deploy_step.dependOn(&wiiload.step);
@@ -89,7 +88,7 @@ pub fn target_wii(builder: *std.build.Builder, comptime options: Options) !*std.
     if (builder.args) |args| {
         for (args) |arg| {
             const program = try print(builder.allocator, "{s}/devkitPPC/bin/powerpc-eabi-addr2line", .{devkitpro});
-            const addr2line = builder.addSystemCommand(&.{ program, "-e", "build/" ++ options.name ++ ".elf", arg });
+            const addr2line = builder.addSystemCommand(&.{ program, "-e", "zig-out/" ++ options.name ++ ".elf", arg });
             line_step.dependOn(&addr2line.step);
         }
     }

@@ -1,8 +1,12 @@
 pub const c = @import("c.zig");
-pub const utils = @import("utils.zig");
 pub const Pad = @import("Pad.zig");
 pub const Video = @import("Video.zig");
 pub const Rectangle = @import("Rectangle.zig");
+
+/// Creates a framebuffer from video mode
+pub fn framebuffer(mode: *c.GXRModeObj) *anyopaque {
+    return c.MEM_K0_TO_K1(c.SYS_AllocateFramebuffer(mode)) orelse unreachable;
+}
 
 pub fn start(function: fn (*Video) anyerror!void) void {
     Pad.init();

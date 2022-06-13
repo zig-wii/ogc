@@ -1,5 +1,5 @@
 const c = @import("c.zig");
-const utils = @import("utils.zig");
+const framebuffer = @import("main.zig").framebuffer;
 
 pub const Video = @This();
 index: u8,
@@ -15,7 +15,7 @@ pub fn init() Video {
     c.VIDEO_Init();
     var fbi: u8 = 0;
     var mode: *c.GXRModeObj = c.VIDEO_GetPreferredMode(null);
-    var fbs: [2]*anyopaque = .{ utils.framebuffer(mode), utils.framebuffer(mode) };
+    var fbs: [2]*anyopaque = .{ framebuffer(mode), framebuffer(mode) };
     c.VIDEO_Configure(mode);
     c.VIDEO_SetNextFramebuffer(fbs[fbi]);
     c.VIDEO_Flush();

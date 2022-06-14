@@ -16,9 +16,9 @@ pub const Options = struct {
 
 pub fn target_wii(builder: *std.build.Builder, comptime options: Options) !*std.build.LibExeObjStep {
     // ensure devkitpro is installed
-    const devkitpro = try print(builder.allocator, "{s}/devkitpro", .{builder.build_root});
+    const devkitpro = try print(builder.allocator, "{s}/zig-devkitpro", .{builder.build_root});
     const base_folder = try std.fs.openDirAbsolute(builder.build_root, .{});
-    base_folder.access("devkitpro", .{}) catch |err| if (err == error.FileNotFound) {
+    base_folder.access("zig-devkitpro", .{}) catch |err| if (err == error.FileNotFound) {
         const repository = switch (builtin.target.os.tag) {
             .macos => "https://github.com/knarkzel/devkitpro-mac",
             else => "https://github.com/knarkzel/devkitpro-linux",

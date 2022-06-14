@@ -1,11 +1,11 @@
 const c = @import("c.zig");
-const utils = @import("utils.zig");
+const framebuffer = @import("main.zig").framebuffer;
 
 pub const Video = @This();
 index: u8,
 first: bool = true,
-width: u32,
-height: u32,
+width: f32,
+height: f32,
 zoom: f32 = 1,
 mode: *c.GXRModeObj,
 framebuffers: [2]*anyopaque,
@@ -15,7 +15,7 @@ pub fn init() Video {
     c.VIDEO_Init();
     var fbi: u8 = 0;
     var mode: *c.GXRModeObj = c.VIDEO_GetPreferredMode(null);
-    var fbs: [2]*anyopaque = .{ utils.framebuffer(mode), utils.framebuffer(mode) };
+    var fbs: [2]*anyopaque = .{ framebuffer(mode), framebuffer(mode) };
     c.VIDEO_Configure(mode);
     c.VIDEO_SetNextFramebuffer(fbs[fbi]);
     c.VIDEO_Flush();
@@ -80,12 +80,12 @@ pub fn init() Video {
     c.GX_SetScissorBoxOffset(0, 0);
     c.GX_SetScissor(0, 0, width, height);
 
-    return Video{ .index = fbi, .mode = mode, .framebuffers = fbs, .perspective = perspective, .width = width, .height = height };
+    return Video{ .index = fbi, .mode = mode, .framebuffers = fbs, .perspective = perspective, .width = @intToFloat(f32, width), .height = @intToFloat(f32, height) };
 }
 
 /// Initialize drawing to screen
 pub fn start(self: *Video) void {
-    c.GX_SetViewport(0, 0, @intToFloat(f32, self.width), @intToFloat(f32, self.height), 0, 1);
+    c.GX_SetViewport(0, 0, self.width, self.height, 0, 1);
 }
 
 /// Finish drawing to screen

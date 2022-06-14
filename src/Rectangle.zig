@@ -91,13 +91,13 @@ pub fn offset_collides(self: Rectangle, other: Rectangle) ?@Vector(2, f32) {
 }
 
 /// Draw rectangle with color: 0xRRGGBBAA
-pub fn draw(box: Rectangle, color: u32) void {
+pub fn draw(self: Rectangle, color: u32) void {
     // Turn off texturing
     c.GX_SetTevOp(c.GX_TEVSTAGE0, c.GX_PASSCLR);
     c.GX_SetVtxDesc(c.GX_VA_TEX0, c.GX_NONE);
 
     c.GX_Begin(c.GX_QUADS, c.GX_VTXFMT0, 4);
-    for (box.area) |point| {
+    for (self.area) |point| {
         c.GX_Position2f32(point[0], point[1]);
         c.GX_Color1u32(color);
     }
@@ -109,21 +109,21 @@ pub fn draw(box: Rectangle, color: u32) void {
 }
 
 /// Draw border with color: 0xRRGGBBAA
-pub fn draw_border(box: Rectangle, color: u32, width: u8) void {
+pub fn draw_border(self: Rectangle, color: u32, stroke: u8) void {
     // Turn off texturing
     c.GX_SetTevOp(c.GX_TEVSTAGE0, c.GX_PASSCLR);
     c.GX_SetVtxDesc(c.GX_VA_TEX0, c.GX_NONE);
 
-    c.GX_SetLineWidth(width, c.GX_TO_ONE);
+    c.GX_SetLineWidth(stroke, c.GX_TO_ONE);
     c.GX_Begin(c.GX_LINESTRIP, c.GX_VTXFMT0, 5);
-    for (box.area) |point| {
+    for (self.area) |point| {
         c.GX_Position2f32(point[0], point[1]);
         c.GX_Color1u32(color);
     }
-    c.GX_Position2f32(box.area[0][0], box.area[0][1]);
+    c.GX_Position2f32(self.area[0][0], self.area[0][1]);
     c.GX_Color1u32(color);
     c.GX_End();
-    c.GX_SetLineWidth(width, c.GX_TO_ZERO);
+    c.GX_SetLineWidth(stroke, c.GX_TO_ZERO);
 
     // Turn on texturing
     c.GX_SetTevOp(c.GX_TEVSTAGE0, c.GX_MODULATE);
@@ -131,13 +131,13 @@ pub fn draw_border(box: Rectangle, color: u32, width: u8) void {
 }
 
 /// Draw sprite with coords: [x, y, width, height] and size: [tpl_width, tpl_height]
-pub fn draw_sprite(box: Rectangle, coords: [4]f32, size: [2]f32) void {
+pub fn draw_sprite(self: Rectangle, coords: [4]f32, size: [2]f32) void {
     const settings = Rectangle.init(coords[0] / size[0], coords[1] / size[1], coords[2] / size[0], coords[3] / size[1]);
     c.GX_Begin(c.GX_QUADS, c.GX_VTXFMT0, 4);
     var i: u8 = 0;
     while (i < 4) {
-        c.GX_Position2f32(box.area[i][0], box.area[i][1]);
-        c.GX_Color1u32(box.color);
+        c.GX_Position2f32(self.area[i][0], self.area[i][1]);
+        c.GX_Color1u32(self.color);
         c.GX_TexCoord2f32(settings.area[i][0], settings.area[i][1]);
         i += 1;
     }

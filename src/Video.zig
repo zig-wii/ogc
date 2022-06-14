@@ -73,7 +73,8 @@ pub fn init() Video {
 
     // Set perspective matrix
     var perspective: c.Mtx44 = undefined;
-    c.guOrtho(&perspective, 37, -510, 0, 639, 0, 300);
+    //                      y1                        y2 x1 x2                       z1 z2
+    c.guOrtho(&perspective, @intToFloat(f32, height), 0, 0, @intToFloat(f32, width), 0, 300);
     c.GX_LoadProjectionMtx(&perspective, c.GX_ORTHOGRAPHIC);
 
     // Final scissor box
@@ -108,9 +109,9 @@ pub fn finish(self: *Video) void {
 
 /// Moves view to x and y
 pub fn camera(self: *Video, x: f32, y: f32) void {
-    const width = @intToFloat(f32, self.width) / self.zoom;
-    const height = @intToFloat(f32, self.height) / self.zoom;
-    c.guOrtho(&self.perspective, y, y + height, x, x + width, 0, width / 2);
+    const width = self.width / self.zoom;
+    const height = self.height / self.zoom;
+    c.guOrtho(&self.perspective, y + height, y, x, x + width, 0, 300);
     c.GX_LoadProjectionMtx(&self.perspective, c.GX_ORTHOGRAPHIC);
 }
 

@@ -20,11 +20,13 @@ pub fn target_wii(builder: *std.build.Builder, comptime options: Options) !*std.
     const base_folder = try std.fs.openDirAbsolute(builder.build_root, .{});
     base_folder.access("zig-devkitpro", .{}) catch |err| if (err == error.FileNotFound) {
         const repository = switch (builtin.target.os.tag) {
-            .macos => "https://github.com/knarkzel/devkitpro-mac",
-            else => "https://github.com/knarkzel/devkitpro-linux",
+            .macos => "https://github.com/zig-wii/devkitpro-mac",
+            .windows => "https://github.com/zig-wii/devkitpro-windows",
+            else => "https://github.com/zig-wii/devkitpro-linux",
         };
         try command(builder.allocator, builder.build_root, &.{ "git", "clone", repository, devkitpro });
     };
+    const ext = if (builtin.target.os.tag == .windows) ".exe" else "";
 
     // set build options
     const mode = builder.standardReleaseOptions();
@@ -49,7 +51,7 @@ pub fn target_wii(builder: *std.build.Builder, comptime options: Options) !*std.
         while (try iter.next()) |entry| {
             if (std.mem.endsWith(u8, entry.name, ".png")) {
                 const input = try print(builder.allocator, "{s}/{s}", .{ textures, entry.name });
-                const conv = try print(builder.allocator, "{s}/tools/bin/gxtexconv", .{devkitpro});
+                const conv = try print(builder.allocator, "{s}/tools/bin/gxtexconv" ++ ext, .{devkitpro});
                 try command(builder.allocator, builder.build_root, &.{ conv, "-i", input });
             }
         }
@@ -57,9 +59,9 @@ pub fn target_wii(builder: *std.build.Builder, comptime options: Options) !*std.
 
     // build both elf and dol
     const flags = .{ "-logc", "-lm" };
-    const gcc = try print(builder.allocator, "{s}/devkitPPC/bin/powerpc-eabi-gcc", .{devkitpro});
+    const gcc = try print(builder.allocator, "{s}/devkitPPC/bin/powerpc-eabi-gcc" ++ ext, .{devkitpro});
     const libogc = try print(builder.allocator, "-L{s}/libogc/lib/wii", .{devkitpro});
-    const elf2dol = try print(builder.allocator, "{s}/tools/bin/elf2dol", .{devkitpro});
+    const elf2dol = try print(builder.allocator, "{s}/tools/bin/elf2dol" ++ ext, .{devkitpro});
     const elf = builder.addSystemCommand(&(.{ gcc, "zig-out/" ++ options.name ++ ".o", "-g", "-DGEKKO", "-mrvl", "-mcpu=750", "-meabi", "-mhard-float", "-Wl,-Map,zig-out/.map", libogc } ++ flags ++ .{ "-o", "zig-out/" ++ options.name ++ ".elf" }));
     const dol = builder.addSystemCommand(&.{ elf2dol, "zig-out/" ++ options.name ++ ".elf", "zig-out/" ++ options.name ++ ".dol" });
     builder.default_step.dependOn(&dol.step);
@@ -75,7 +77,7 @@ pub fn target_wii(builder: *std.build.Builder, comptime options: Options) !*std.
     // deploy dol to wii over network if wii_ip set
     if (options.wii_ip) |wii_ip| {
         const deploy_step = builder.step("deploy", "Deploy to Wii");
-        const program = try print(builder.allocator, "{s}/tools/bin/wiiload", .{devkitpro});
+        const program = try print(builder.allocator, "{s}/tools/bin/wiiload" ++ ext, .{devkitpro});
         const wiiload = builder.addSystemCommand(&.{ program, "zig-out/" ++ options.name ++ ".dol" });
         wiiload.setEnvironmentVariable("WIILOAD", "tcp:" ++ wii_ip);
         deploy_step.dependOn(&dol.step);
@@ -87,7 +89,7 @@ pub fn target_wii(builder: *std.build.Builder, comptime options: Options) !*std.
     line_step.dependOn(&dol.step);
     if (builder.args) |args| {
         for (args) |arg| {
-            const program = try print(builder.allocator, "{s}/devkitPPC/bin/powerpc-eabi-addr2line", .{devkitpro});
+            const program = try print(builder.allocator, "{s}/devkitPPC/bin/powerpc-eabi-addr2line" ++ ext, .{devkitpro});
             const addr2line = builder.addSystemCommand(&.{ program, "-e", "zig-out/" ++ options.name ++ ".elf", arg });
             line_step.dependOn(&addr2line.step);
         }

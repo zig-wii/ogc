@@ -154,3 +154,21 @@ pub fn draw_sprite(self: Rectangle, coords: [4]f32, size: [2]f32) void {
     }
     c.GX_End();
 }
+
+/// Draw points of rectangle with color: 0xRRGGBBAA
+pub fn draw_points(self: Rectangle, color: u32) void {
+    // Turn off texturing
+    c.GX_SetTevOp(c.GX_TEVSTAGE0, c.GX_PASSCLR);
+    c.GX_SetVtxDesc(c.GX_VA_TEX0, c.GX_NONE);
+
+    c.GX_Begin(c.GX_POINTS, c.GX_VTXFMT0, 4);
+    for (self.area) |point| {
+        c.GX_Position2f32(point[0], point[1]);
+        c.GX_Color1u32(color);
+    }
+    c.GX_End();
+
+    // Turn on texturing
+    c.GX_SetTevOp(c.GX_TEVSTAGE0, c.GX_MODULATE);
+    c.GX_SetVtxDesc(c.GX_VA_TEX0, c.GX_DIRECT);
+}

@@ -73,7 +73,7 @@ pub fn init() Video {
 
     // Set perspective matrix
     var perspective: c.Mtx44 = undefined;
-    c.guOrtho(&perspective, -37, 510, 0, 639, 0, 300);
+    c.guOrtho(&perspective, 37, -510, 0, 639, 0, 300);
     c.GX_LoadProjectionMtx(&perspective, c.GX_ORTHOGRAPHIC);
 
     // Final scissor box

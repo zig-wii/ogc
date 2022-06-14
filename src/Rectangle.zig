@@ -46,10 +46,21 @@ pub fn rotate(self: *Rectangle, origo: [2]f32, angle: f32) void {
 }
 
 /// Checks collision for axis aligned rectangles (no rotation)
-pub fn aabb_collides(self: Rectangle, other: Rectangle) bool {
-    const rx = self.area;
-    const ry = other.area;
-    return (rx[0][0] < ry[1][0] and rx[1][0] > ry[0][0] and rx[0][1] < ry[2][1] and rx[2][1] > ry[0][1]);
+pub fn aabb_collides(self: Rectangle, box: Rectangle) bool {
+    for (self.area) |point| {
+        // horizontal
+        const x1 = box.area[0][0];
+        const x2 = box.area[1][0];
+        const between_x = (point[0] < x2 and point[0] > x1) or (point[0] < x1 and point[0] > x2);
+
+        // vertical
+        const y1 = box.area[0][1];
+        const y2 = box.area[3][1];
+        const between_y = (point[1] < y1 and point[0] > y2) or (point[1] < y2 and point[1] > y1);
+
+        // return true if point inside box, accounts for flipping and mirroring
+        return (between_x and between_y);
+    } else return false;
 }
 
 /// Checks collision for any bounding boxes (with rotation), returns relative displacement

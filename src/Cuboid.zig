@@ -25,6 +25,13 @@ pub fn init(
     };
 }
 
+pub fn set_colors(self: *Cuboid, colors: [6]u32) void {
+    var i: u8 = 0;
+    while (i < 6) : (i += 1) {
+        self.planes[i].color = colors[i];
+    }
+}
+
 pub fn draw(self: Cuboid) void {
     // Turn off texturing
     c.GX_SetTevOp(c.GX_TEVSTAGE0, c.GX_PASSCLR);

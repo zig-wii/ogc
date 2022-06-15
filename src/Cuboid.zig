@@ -1,7 +1,7 @@
-const Vertex = @import("Vertex.zig");
+const Plane = @import("Plane.zig");
 
 pub const Cuboid = @This();
-vertices: [6]Vertex,
+planes: [6]Plane,
 
 pub fn init(
     x: f32,
@@ -10,15 +10,15 @@ pub fn init(
     w: f32,
     h: f32,
     l: f32,
-) Cube {
+) Cuboid {
     return .{
-        .vertices = .{
-            Vertex.init_y(x, y, z, w, l),
-            Vertex.init_z(x, y, z + l, w, h),
-            Vertex.init_x(x + w, y, z + l, w, h),
-            Vertex.init_z(x, y, z, w, h),
-            Vertex.init_x(x, y, z + l, w, h),
-            Vertex.init_y(x, y + h, z, w, l),
+        .planes = .{
+            Plane.init_y(x, y, z, w, l),
+            Plane.init_z(x, y, z + l, w, h),
+            Plane.init_x(x + w, y, z + l, w, h),
+            Plane.init_z(x, y, z, w, h),
+            Plane.init_x(x, y, z + l, w, h),
+            Plane.init_y(x, y + h, z, w, l),
         },
     };
 }

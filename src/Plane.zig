@@ -1,14 +1,14 @@
-pub const Vertex = @This();
+pub const Plane = @This();
 area: [4][3]f32,
 
-/// Creates vertex that's aligned with the x-axis
+/// Creates plane that's aligned with the x-axis
 pub fn init_x(
     x: f32,
     y: f32,
     z: f32,
     w: f32,
     h: f32,
-) Vertex {
+) Plane {
     return .{ .area = .{
         .{ x, y, z },
         .{ x, y, z - l },
@@ -17,14 +17,14 @@ pub fn init_x(
     } };
 }
 
-/// Creates vertex that's aligned with the y-axis
+/// Creates plane that's aligned with the y-axis
 pub fn init_y(
     x: f32,
     y: f32,
     z: f32,
     w: f32,
     l: f32,
-) Vertex {
+) Plane {
     return .{ .area = .{
         .{ x, y, z },
         .{ x + w, y, z },
@@ -33,14 +33,14 @@ pub fn init_y(
     } };
 }
 
-/// Creates vertex that's aligned with the z-axis
+/// Creates plane that's aligned with the z-axis
 pub fn init_z(
     x: f32,
     y: f32,
     z: f32,
     w: f32,
     h: f32,
-) Vertex {
+) Plane {
     return .{ .area = .{
         .{ x, y, z },
         .{ x + w, y, z },

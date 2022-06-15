@@ -76,11 +76,18 @@ pub fn init(display: Display) Video {
 
     // Set perspective matrix
     var perspective: c.Mtx44 = undefined;
+    // var view: c.Mtx = undefined;
+    // var cam = c.guVector{ 0, 0, 0 };
+    // var up = c.guVector{ 0, 1, 0 };
+    // var look = c.guVector{ 0, 0, -1 };
+    // c.guLookAt(view, &cam, &up, &look);
+
     c.guOrtho(&perspective, 0, @intToFloat(f32, height), 0, @intToFloat(f32, width), 0, 300);
+
     if (display == .orthographic) {
-        c.GX_LoadProjectionMtx(&perspective, c.GX_ORTHOGRAPHIC);
+        // c.GX_LoadProjectionMtx(&perspective, c.GX_ORTHOGRAPHIC);
     } else {
-        c.GX_LoadProjectionMtx(&perspective, c.GX_PERSPECTIVE);
+        // c.GX_LoadProjectionMtx(&perspective, c.GX_PERSPECTIVE);
     }
 
     // TODO: Maybe use this for perspective?
@@ -89,8 +96,8 @@ pub fn init(display: Display) Video {
     // // and aspect ratio based on the display resolution
     // f32 w = rmode->viWidth;
     // f32 h = rmode->viHeight;
-    // guPerspective(perspective, 45, (f32)w/h, 0.1F, 300.0F);
-    // GX_LoadProjectionMtx(perspective, GX_PERSPECTIVE);
+    c.guPerspective(&perspective, 45, @intToFloat(f32, width) / @intToFloat(f32, height), 0.1, 300.0);
+    c.GX_LoadProjectionMtx(&perspective, c.GX_PERSPECTIVE);
 
     // Final scissor box
     c.GX_SetScissorBoxOffset(0, 0);

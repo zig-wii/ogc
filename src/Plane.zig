@@ -35,8 +35,8 @@ pub fn init_y(
         .area = .{
             .{ x, y, z },
             .{ x + w, y, z },
-            .{ x + w, y, z - l },
-            .{ x, y, z - l },
+            .{ x + w, y, z + l },
+            .{ x, y, z + l },
         },
         .color = color,
     };

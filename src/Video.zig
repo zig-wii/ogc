@@ -3,18 +3,37 @@ const framebuffer = @import("main.zig").framebuffer;
 
 pub const Video = @This();
 index: u8,
-first: bool = true,
 width: f32,
 height: f32,
-zoom: f32 = 1,
+display: Display,
 mode: *c.GXRModeObj,
 framebuffers: [2]*anyopaque,
+zoom: f32 = 1,
+first: bool = true,
+view: c.Mtx = undefined,
 perspective: c.Mtx44 = undefined,
-display: Display = .orthographic,
 
 pub const Display = enum { orthographic, perspective };
 
-pub fn init(display: Display) Video {
+pub const Vector = extern struct {
+    x: f32,
+    y: f32,
+    z: f32,
+};
+
+pub const Camera = union(Display) {
+    orthographic: struct {
+        x: f32,
+        y: f32,
+    },
+    perspective: struct {
+        up: Vector = .{ .x = 0, .y = -1, .z = 0 },
+        position: Vector = .{ .x = 0, .y = 0, .z = 0 },
+        target: Vector,
+    },
+};
+
+pub fn init(comptime display: Display) Video {
     c.VIDEO_Init();
     var fbi: u8 = 0;
     var mode: *c.GXRModeObj = c.VIDEO_GetPreferredMode(null);
@@ -76,27 +95,29 @@ pub fn init(display: Display) Video {
 
     // Set perspective matrix
     var perspective: c.Mtx44 = undefined;
-    c.guOrtho(&perspective, 0, @intToFloat(f32, height), 0, @intToFloat(f32, width), 0, 300);
     if (display == .orthographic) {
+        c.guOrtho(&perspective, 0, @intToFloat(f32, height), 0, @intToFloat(f32, width), 0, 300);
         c.GX_LoadProjectionMtx(&perspective, c.GX_ORTHOGRAPHIC);
     } else {
+        const fov = 90;
+        const aspect_ratio = @intToFloat(f32, width) / @intToFloat(f32, height);
+        c.guPerspective(&perspective, fov, aspect_ratio, 0.1, 300);
         c.GX_LoadProjectionMtx(&perspective, c.GX_PERSPECTIVE);
     }
-
-    // TODO: Maybe use this for perspective?
-    // 	// setup our projection matrix
-    // // this creates a perspective matrix with a view angle of 90,
-    // // and aspect ratio based on the display resolution
-    // f32 w = rmode->viWidth;
-    // f32 h = rmode->viHeight;
-    // guPerspective(perspective, 45, (f32)w/h, 0.1F, 300.0F);
-    // GX_LoadProjectionMtx(perspective, GX_PERSPECTIVE);
 
     // Final scissor box
     c.GX_SetScissorBoxOffset(0, 0);
     c.GX_SetScissor(0, 0, width, height);
 
-    return Video{ .index = fbi, .mode = mode, .framebuffers = fbs, .perspective = perspective, .width = @intToFloat(f32, width), .height = @intToFloat(f32, height), .display = display };
+    return Video{
+        .index = fbi,
+        .mode = mode,
+        .framebuffers = fbs,
+        .perspective = perspective,
+        .width = @intToFloat(f32, width),
+        .height = @intToFloat(f32, height),
+        .display = display,
+    };
 }
 
 /// Initialize drawing to screen
@@ -107,12 +128,13 @@ pub fn start(self: *Video) void {
 /// Finish drawing to screen
 pub fn finish(self: *Video) void {
     self.index ^= 1;
+    c.GX_DrawDone();
     c.GX_SetZMode(c.GX_TRUE, c.GX_LEQUAL, c.GX_TRUE);
-    c.GX_SetBlendMode(c.GX_BM_BLEND, c.GX_BL_SRCALPHA, c.GX_BL_INVSRCALPHA, c.GX_LO_CLEAR);
+    if (self.display == .orthographic)
+        c.GX_SetBlendMode(c.GX_BM_BLEND, c.GX_BL_SRCALPHA, c.GX_BL_INVSRCALPHA, c.GX_LO_CLEAR);
     c.GX_SetAlphaUpdate(c.GX_TRUE);
     c.GX_SetColorUpdate(c.GX_TRUE);
     c.GX_CopyDisp(self.framebuffers[self.index], c.GX_TRUE);
-    c.GX_DrawDone();
     c.VIDEO_SetNextFramebuffer(self.framebuffers[self.index]);
     if (self.first) {
         self.first = false;
@@ -122,15 +144,24 @@ pub fn finish(self: *Video) void {
     c.VIDEO_WaitVSync();
 }
 
-/// Moves view to x and y, display should be orthographic
-pub fn camera(self: *Video, x: f32, y: f32) void {
-    const width = self.width / self.zoom;
-    const height = self.height / self.zoom;
-    c.guOrtho(&self.perspective, y, y + height, x, x + width, 0, 300);
-    if (self.display == .orthographic) {
-        c.GX_LoadProjectionMtx(&self.perspective, c.GX_ORTHOGRAPHIC);
-    } else {
-        c.GX_LoadProjectionMtx(&self.perspective, c.GX_PERSPECTIVE);
+/// Sets current camera
+pub fn set_camera(self: *Video, camera: Camera) void {
+    switch (camera) {
+        .orthographic => |data| {
+            const width = self.width / self.zoom;
+            const height = self.height / self.zoom;
+            c.guOrtho(&self.perspective, data.y, data.y + height, data.x, data.x + width, 0, 300);
+            c.GX_LoadProjectionMtx(&self.perspective, c.GX_ORTHOGRAPHIC);
+        },
+        .perspective => |data| {
+            c.guLookAt(
+                &self.view,
+                &@bitCast(c.guVector, data.position),
+                &@bitCast(c.guVector, data.up),
+                &@bitCast(c.guVector, data.target),
+            );
+            c.GX_LoadPosMtxImm(&self.view, c.GX_PNMTX0);
+        },
     }
 }
 

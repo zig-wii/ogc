@@ -4,6 +4,7 @@ const Plane = @import("Plane.zig");
 pub const Cuboid = @This();
 planes: [6]Plane,
 
+// TODO: y-axis is currently in wrong direction, I think
 pub fn init(
     x: f32,
     y: f32,

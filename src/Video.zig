@@ -76,28 +76,13 @@ pub fn init(display: Display) Video {
 
     // Set perspective matrix
     var perspective: c.Mtx44 = undefined;
-    // var view: c.Mtx = undefined;
-    // var cam = c.guVector{ 0, 0, 0 };
-    // var up = c.guVector{ 0, 1, 0 };
-    // var look = c.guVector{ 0, 0, -1 };
-    // c.guLookAt(view, &cam, &up, &look);
-
-    c.guOrtho(&perspective, 0, @intToFloat(f32, height), 0, @intToFloat(f32, width), 0, 300);
-
     if (display == .orthographic) {
-        // c.GX_LoadProjectionMtx(&perspective, c.GX_ORTHOGRAPHIC);
+        c.guOrtho(&perspective, 0, @intToFloat(f32, height), 0, @intToFloat(f32, width), 0, 300);
+        c.GX_LoadProjectionMtx(&perspective, c.GX_ORTHOGRAPHIC);
     } else {
-        // c.GX_LoadProjectionMtx(&perspective, c.GX_PERSPECTIVE);
+        c.guPerspective(&perspective, 45, @intToFloat(f32, width) / @intToFloat(f32, height), 0.1, 300.0);
+        c.GX_LoadProjectionMtx(&perspective, c.GX_PERSPECTIVE);
     }
-
-    // TODO: Maybe use this for perspective?
-    // 	// setup our projection matrix
-    // // this creates a perspective matrix with a view angle of 90,
-    // // and aspect ratio based on the display resolution
-    // f32 w = rmode->viWidth;
-    // f32 h = rmode->viHeight;
-    c.guPerspective(&perspective, 45, @intToFloat(f32, width) / @intToFloat(f32, height), 0.1, 300.0);
-    c.GX_LoadProjectionMtx(&perspective, c.GX_PERSPECTIVE);
 
     // Final scissor box
     c.GX_SetScissorBoxOffset(0, 0);
@@ -114,12 +99,13 @@ pub fn start(self: *Video) void {
 /// Finish drawing to screen
 pub fn finish(self: *Video) void {
     self.index ^= 1;
+    c.GX_DrawDone();
     c.GX_SetZMode(c.GX_TRUE, c.GX_LEQUAL, c.GX_TRUE);
-    c.GX_SetBlendMode(c.GX_BM_BLEND, c.GX_BL_SRCALPHA, c.GX_BL_INVSRCALPHA, c.GX_LO_CLEAR);
+    if (self.display == .orthographic)
+        c.GX_SetBlendMode(c.GX_BM_BLEND, c.GX_BL_SRCALPHA, c.GX_BL_INVSRCALPHA, c.GX_LO_CLEAR);
     c.GX_SetAlphaUpdate(c.GX_TRUE);
     c.GX_SetColorUpdate(c.GX_TRUE);
     c.GX_CopyDisp(self.framebuffers[self.index], c.GX_TRUE);
-    c.GX_DrawDone();
     c.VIDEO_SetNextFramebuffer(self.framebuffers[self.index]);
     if (self.first) {
         self.first = false;

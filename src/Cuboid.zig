@@ -25,11 +25,43 @@ pub fn init(
     };
 }
 
+// Size helpers
+pub fn width(self: Cuboid) f32 {
+    return self.planes[0].area[1][0] - self.planes[0].area[0][0];
+}
+
+pub fn height(self: Cuboid) f32 {
+    return self.planes[1].area[0][1] - self.planes[1].area[3][1];
+}
+
+pub fn length(self: Cuboid) f32 {
+    return self.planes[0].area[3][2] - self.planes[0].area[0][2];
+}
+
+pub fn center(self: Cuboid) [3]f32 {
+    const x = self.planes[0].area[0][0] + self.width() / 2;
+    const y = self.planes[0].area[0][1] - self.height() / 2;
+    const z = self.planes[0].area[0][2] + self.length() / 2;
+    return .{ x, y, z };
+}
+
+// Rotate helpers
+pub fn rotate_x(self: *Cuboid, point: [3]f32, angle: f32) void {
+    for (self.planes) |*plane| plane.rotate_x(point, angle);
+}
+
+pub fn rotate_y(self: *Cuboid, point: [3]f32, angle: f32) void {
+    for (self.planes) |*plane| plane.rotate_y(point, angle);
+}
+
+pub fn rotate_z(self: *Cuboid, point: [3]f32, angle: f32) void {
+    for (self.planes) |*plane| plane.rotate_z(point, angle);
+}
+
+// Colors and drawing
 pub fn set_colors(self: *Cuboid, colors: [6]u32) void {
     var i: u8 = 0;
-    while (i < 6) : (i += 1) {
-        self.planes[i].color = colors[i];
-    }
+    while (i < 6) : (i += 1) self.planes[i].color = colors[i];
 }
 
 pub fn draw(self: Cuboid) void {

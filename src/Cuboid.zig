@@ -12,8 +12,8 @@ pub fn init(
     w: f32,
     h: f32,
     l: f32,
-    color: u32,
 ) Cuboid {
+    const color = 0xFFFFFFFF;
     return .{
         .planes = .{
             Plane.init_y(x, y, z, w, l, color),
@@ -60,6 +60,10 @@ pub fn rotate_z(self: *Cuboid, point: [3]f32, angle: f32) void {
 }
 
 // Colors and drawing
+pub fn set_color(self: *Cuboid, color: u32) void {
+    for (self.planes) |*plane| plane.color = color;
+}
+
 pub fn set_colors(self: *Cuboid, colors: [6]u32) void {
     var i: u8 = 0;
     while (i < 6) : (i += 1) self.planes[i].color = colors[i];

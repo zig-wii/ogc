@@ -49,13 +49,13 @@ pub fn button_held(button: Button, player: usize) bool {
 }
 
 /// Returns horizontal direction of c-stick
-pub fn sub_stick_x(player: usize) i8 {
-    return c.PAD_SubStickX(player);
+pub fn sub_stick_x(player: usize) f32 {
+    return @intToFloat(f32, c.PAD_SubStickX(@intCast(i32, player))) / 128;
 }
 
 /// Returns vertical direction of c-stick
-pub fn sub_stick_y(player: usize) i8 {
-    return c.PAD_SubStickY(player);
+pub fn sub_stick_y(player: usize) f32 {
+    return @intToFloat(f32, c.PAD_SubStickY(@intCast(i32, player))) / 128;
 }
 
 /// Returns horizontal direction of analog stick

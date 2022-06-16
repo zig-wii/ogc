@@ -49,9 +49,10 @@ pub fn init(display: Display) Video {
     var fifo_buffer = c.MEM_K0_TO_K1(&buffer[0]) orelse unreachable;
     _ = c.GX_Init(fifo_buffer, fifo_size);
 
-    // TODO: Fix background color
-    // const background = c.GXColor{ .r = 100, .g = 100, .b = 100, .a = 100 };
-    // c.GX_SetCopyClear(background, 0x00FFFFFF);
+    // GX_SetCopyClear expects pointer, but we can't pass pointer due to how the
+    // library is translated, so this will do
+    const background = c.GXColor{ .r = 0xaa, .g = 0xbb, .b = 0xcc, .a = 0xdd };
+    c.GX_SetCopyClear(@bitCast(c.GXColor, @ptrToInt(&background)), 0x00FFFFFF);
 
     const width = mode.fbWidth;
     const height = mode.efbHeight;

@@ -33,7 +33,7 @@ pub const Camera = union(Display) {
     },
 };
 
-pub fn init(display: Display) Video {
+pub fn init(comptime display: Display) Video {
     c.VIDEO_Init();
     var fbi: u8 = 0;
     var mode: *c.GXRModeObj = c.VIDEO_GetPreferredMode(null);
@@ -97,7 +97,7 @@ pub fn init(display: Display) Video {
     // Set perspective matrix
     var perspective: c.Mtx44 = undefined;
     if (display == .orthographic) {
-        c.guOrtho(&perspective, 0, @intToFloat(f32, height), 0, @intToFloat(f32, width), 0.1, 300);
+        c.guOrtho(&perspective, 0, @intToFloat(f32, height), 0, @intToFloat(f32, width), 0, 300);
         c.GX_LoadProjectionMtx(&perspective, c.GX_ORTHOGRAPHIC);
     } else {
         const fov = 90;
@@ -151,7 +151,7 @@ pub fn set_camera(self: *Video, camera: Camera) void {
         .orthographic => |data| {
             const width = self.width / self.zoom;
             const height = self.height / self.zoom;
-            c.guOrtho(&self.perspective, data.y, data.y + height, data.x, data.x + width, 0.1, 300);
+            c.guOrtho(&self.perspective, data.y, data.y + height, data.x, data.x + width, 0, 300);
             c.GX_LoadProjectionMtx(&self.perspective, c.GX_ORTHOGRAPHIC);
         },
         .perspective => |data| {

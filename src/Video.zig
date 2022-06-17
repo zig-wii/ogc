@@ -167,10 +167,13 @@ pub fn set_camera(self: *Video, camera: Camera) void {
 }
 
 /// Loads TPL from path
-pub fn load_tpl(data: []u8) void {
+pub fn load_tpl(comptime path: []const u8) void {
+    const data = &struct {
+        var bytes = @embedFile(path).*;
+    }.bytes;
     var sprite: c.TPLFile = undefined;
     var texture: c.GXTexObj = undefined;
-    _ = c.TPL_OpenTPLFromMemory(&sprite, @ptrCast(*anyopaque, data), data.len);
+    _ = c.TPL_OpenTPLFromMemory(&sprite, data, data.len);
     _ = c.TPL_GetTexture(&sprite, 0, &texture);
     c.GX_LoadTexObj(&texture, 0);
 

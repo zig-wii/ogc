@@ -9,7 +9,7 @@ pub fn init() void {
 pub fn update() [4]bool {
     const connected = c.PAD_ScanPads();
     var controllers = [4]bool{ false, false, false, false };
-    for (controllers) |*controller, i| {
+    for (&controllers, 0..) |*controller, i| {
         if (connected & std.math.shl(u32, 1, i) != 0) {
             controller.* = true;
         }

@@ -44,7 +44,7 @@ pub fn mirror(self: *Rectangle) void {
 /// Rotates rectangle around point by angle (degrees)
 pub fn rotate(self: *Rectangle, origo: [2]f32, angle: f32) void {
     const radians = angle * std.math.pi / 180;
-    for (self.area) |*point| {
+    for (&self.area) |*point| {
         const x = point[0] - origo[0];
         const y = point[1] - origo[1];
         point[0] = @cos(radians) * x - @sin(radians) * y + origo[0];

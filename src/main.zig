@@ -10,7 +10,7 @@ pub fn framebuffer(mode: *c.GXRModeObj) *anyopaque {
     return c.MEM_K0_TO_K1(c.SYS_AllocateFramebuffer(mode)) orelse unreachable;
 }
 
-pub fn start(function: fn (*Video) anyerror!void, comptime display: Video.Display) void {
+pub fn start(function: *const fn (*Video) anyerror!void, comptime display: Video.Display) void {
     Pad.init();
     var video = Video.init(display);
     function(&video) catch |err| @panic(@errorName(err));
